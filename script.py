@@ -13,6 +13,7 @@ BASIC SCRIPT THAT CREATES A TABLE FROM USER INPUT
 5) ask for nullable
 6) ask default
 '''
+tables = list()
 
 def exitApp() : 
 	global isFinished
@@ -112,7 +113,32 @@ def askForColumnSize() :
 
 	answers = prompt(questions)
 	return (answers['columnSize'])
-	
+
+def askForTableTarget() :
+	questions = [
+		{
+			'type': 'input',
+			'message': 'Name of the table to target in the relationship',
+			'name': 'tableTarget'
+		}
+	]
+
+	answers = prompt(questions)
+	return (answers['tableTarget'])
+
+def askForColumnTarget() :
+	questions = [
+		{
+			'type': 'input',
+			'message': 'Name of the column to target in the relationship',
+			'name': 'columnTarget'
+		}
+	]
+
+	answers = prompt(questions)
+	return (answers['columnTarget'])
+
+
 def isNullable() :
 	questions = [
 		{
@@ -137,45 +163,94 @@ def isUnique() :
 	answers = prompt(questions)
 	return (answers['isItUnique'])
 
+def addRelation() :
+	questions = [
+		{
+			'type': 'confirm',
+			'message': 'Add a relationship of a column with another one?',
+			'name': 'addRelation'
+		}
+	]
+
+	answers = prompt(questions)
+	return (answers['addRelation'])
+
+def checkOneColumn(columns) :
+	questions = [
+		{
+			'type': 'list',
+			'message': 'Select column to add a relation (DOES NOT WORKS)',
+			'name': 'column',
+			'choices': [],
+			'validate': lambda answer: 'You must choose at least one.' \
+			if len(answer) == 0 else True
+		}
+	]
+
+	i = 0
+	for c in columns:
+		questions[0]['choices'].append(c)
+		i = i + 1
+
+	answers = prompt(questions)
+	return (answers['column'])
+
 def createNewTable():
 	name = nameOfTable()
+	tables.append(name)
 	systemOrBasic = askForSystemOrEntity()
 	keepAddingColumn = True
 	tab = '  '
+	columns = list()
+	sqlFileToWrite = ''
 
-	sqlFile = open('files/V1_0__Create_Table_' + name + '.sql', 'w')
-	sqlFile.write('CREATE TABLE ' + name + ' (\n')
-	sqlFile.write(tab + 'Id ' + tab + 'int IDENTITY NOT NULL,\n')
+	sqlFileToWrite += 'CREATE TABLE ' + name + ' (\n'
+	sqlFileToWrite += tab + 'Id ' + tab + 'int IDENTITY NOT NULL,\n'
 
 	while keepAddingColumn :
 		columnName = askForColumnName()
 		columnType = askForColumnType()
 		columnSize = ''
+		columns.append(columnName)
 
 		if columnType.encode("utf-8") == "varchar".encode("utf-8") :
 			columnSize = askForColumnSize()
 
-		sqlFile.write(tab)
-		sqlFile.write(columnName + tab + columnType)
+		sqlFileToWrite += tab + columnName + tab + columnType
 
 		if columnSize is not '':
-			sqlFile.write('(' + columnSize + ')')
+			sqlFileToWrite += '(' + columnSize + ')'
 
 		if(isNullable() is True) :
-			sqlFile.write(' NULL')
+			sqlFileToWrite += ' NULL'
 		else :
-			sqlFile.write(' NOT NULL')
+			sqlFileToWrite += ' NOT NULL'
 
 		if(isUnique() is True) :
-			sqlFile.write(' UNIQUE')
+			sqlFileToWrite += ' UNIQUE'
 
+		sqlFileToWrite += ',\n'
 		keepAddingColumn = addAnotherColumn()
-		print(keepAddingColumn)
-		sqlFile.write(',\n')
 
-	sqlFile.write('CONSTRAINT PK' + name + '\n')
-	sqlFile.write('PRIMARY KEY (Id)\n')
-	sqlFile.write(');\n')
+	if systemOrBasic == 'basic' :
+		sqlFileToWrite += tab +'CreatedDate' + tab + 'datetime2 DEFAULT SYSUTCDATETIME() NOT NULL,\n'
+		sqlFileToWrite += tab +'ModifiedDate' + tab + 'datetime2 NULL,\n'
+		sqlFileToWrite += tab +'CreatedUser' + tab + 'int NULL,\n'
+		sqlFileToWrite += tab +'ModifiedUser' + tab + 'int NULL,\n'
+
+	sqlFileToWrite += tab +'CONSTRAINT PK' + name + '\n'
+	sqlFileToWrite += tab +'PRIMARY KEY (Id)\n'
+	sqlFileToWrite += ');\n'
+
+	while addRelation() is True :
+		column = checkOneColumn(columns)
+		tableTarget = askForTableTarget()
+		columnTarget = askForColumnTarget()
+
+		sqlFileToWrite += 'ALTER TABLE ' + name + ' ADD CONSTRAINT FK' + name + column + ' FOREIGN KEY (' + column + ') REFERENCES ' + tableTarget + ' (' + columnTarget + ');\n'
+
+	sqlFile = open('files/V1_0__Create_Table_' + name + '.sql', 'w')
+	sqlFile.write(sqlFileToWrite)
 
 def callMenus() : 
 	global isFinished
@@ -185,17 +260,5 @@ def callMenus() :
 	while isFinished is False :
 		 createNewTable()
 		 isFinished = exitApp()
-
-def testMenus(): 
-	questions = [
-		{
-			'type': 'input',
-			'message': 'Name of the table',
-			'name': 'tableName'
-		}
-	]
-
-	answers = prompt(questions)
-	return (answers['tableName'])
 
 callMenus()
