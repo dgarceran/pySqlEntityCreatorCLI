@@ -3,7 +3,7 @@ from PyInquirer import style_from_dict, Token, prompt, Separator
 import config as cfg
 import os
 from shutil import copyfile
-import creator as c
+from creator import nameOfTable
 
 def nameToSearch() :
 	questions = [
@@ -93,7 +93,7 @@ def searchEntityFiles(searchName) :
 	# r=root, d=directories, f = files
 	for r, d, f in os.walk(cfg.srcUrl):
 		for file in f:
-			if '_' + searchName in file and 'Table' in file:
+			if ('_' + searchName in file or '_' + searchName in file.lower()) and 'Table' in file:
 				files.append(os.path.join(r, file))
 
 	for f in files:
@@ -126,7 +126,7 @@ def cleanChoosenFile(choosenFile):
 
 def cloneFile() : 
 	# ask for name of the new file
-	tableName = c.nameOfTable()
+	tableName = nameOfTable()
 	# ask for name of the file to copy - use searchEntityFiles()
 	files = searchEntityFiles(nameToSearch())
 	choosenFile = selectorOfTable(files)
