@@ -1,33 +1,8 @@
 from __future__ import print_function, unicode_literals
 from PyInquirer import style_from_dict, Token, prompt, Separator
-from pprint import pprint
+import config as cfg
 
-''' 
-BASIC SCRIPT THAT CREATES A TABLE FROM USER INPUT
-*************************************************
-
-1) ask if the table is system or entity (to add created/modified user/date).
-2) ask name of each property until the user says there is no more
-3) for each property ask for the db type
-4) ask for lenght if var
-5) ask for nullable
-6) ask default
-'''
 tables = list()
-
-def exitApp() : 
-	global isFinished
-
-	questions = [
-		{
-			'type': 'confirm',
-			'message': 'Do you want to exit?',
-			'name': 'exit'
-		}
-	]
-
-	answers = prompt(questions)
-	return (answers['exit'])
 
 def addAnotherColumn() : 
 	questions = [
@@ -91,8 +66,13 @@ def askForColumnType() :
 			'name': 'type',
 			'choices': [
 				{'name': 'int'},
+				{'name': 'decimal'},
 				{'name': 'varchar'},
-				{'name': 'datetime2'}
+				{'name': 'nvarchar'},
+				{'name': 'date'},
+				{'name': 'time'},
+				{'name': 'datetime2'},
+				{'name': 'bit'}
 			],
 			'validate': lambda answer: 'You must choose at least one.' \
 			if len(answer) == 0 else True
@@ -138,6 +118,17 @@ def askForColumnTarget() :
 	answers = prompt(questions)
 	return (answers['columnTarget'])
 
+def askForDefaultValue() :
+	questions = [
+		{
+			'type': 'input',
+			'message': 'Type the default value of the column',
+			'name': 'defaultValueInserted'
+		}
+	]
+
+	answers = prompt(questions)
+	return (answers['defaultValueInserted'])
 
 def isNullable() :
 	questions = [
@@ -163,6 +154,18 @@ def isUnique() :
 	answers = prompt(questions)
 	return (answers['isItUnique'])
 
+def hasDefaultValue() :
+	questions = [
+		{
+			'type': 'confirm',
+			'message': 'Has it a default value?',
+			'name': 'defaultValue'
+		}
+	]
+
+	answers = prompt(questions)
+	return (answers['defaultValue'])
+
 def addRelation() :
 	questions = [
 		{
@@ -179,7 +182,7 @@ def checkOneColumn(columns) :
 	questions = [
 		{
 			'type': 'list',
-			'message': 'Select column to add a relation (DOES NOT WORKS)',
+			'message': 'Select column to add a relation',
 			'name': 'column',
 			'choices': [],
 			'validate': lambda answer: 'You must choose at least one.' \
@@ -221,7 +224,13 @@ def createNewTable():
 		if columnSize is not '':
 			sqlFileToWrite += '(' + columnSize + ')'
 
-		if(isNullable() is True) :
+		if columnType.encode("utf-8") == "decimal".encode("utf-8") :
+			sqlFileToWrite += '(' + cfg.defaultTypeLength['decimal'] + ')'
+
+		if hasDefaultValue() is True:
+			sqlFileToWrite += " DEFAULT " + askForDefaultValue() + ""
+
+		if isNullable() is True :
 			sqlFileToWrite += ' NULL'
 		else :
 			sqlFileToWrite += ' NOT NULL'
@@ -251,14 +260,3 @@ def createNewTable():
 
 	sqlFile = open('files/V1_0__Create_Table_' + name + '.sql', 'w')
 	sqlFile.write(sqlFileToWrite)
-
-def callMenus() : 
-	global isFinished
-	
-	isFinished = False
-
-	while isFinished is False :
-		 createNewTable()
-		 isFinished = exitApp()
-
-callMenus()
