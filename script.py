@@ -1,3 +1,7 @@
+from __future__ import print_function, unicode_literals
+from PyInquirer import style_from_dict, Token, prompt, Separator
+from pprint import pprint
+
 ''' 
 BASIC SCRIPT THAT CREATES A TABLE FROM USER INPUT
 *************************************************
@@ -10,54 +14,128 @@ BASIC SCRIPT THAT CREATES A TABLE FROM USER INPUT
 6) ask default
 '''
 
-def exitApp(isFinishedExternal) : 
+def exitApp() : 
 	global isFinished
 
-	if isFinishedExternal is '':
-		isFinishedUser = raw_input("Exit? [Y/N]")
+	questions = [
+		{
+			'type': 'confirm',
+			'message': 'Do you want to exit?',
+			'name': 'exit'
+		}
+	]
 
-		if isFinishedUser is "Y" or isFinishedUser is "y":
-			isFinished = True
-		else :
-			isFinished = False
-	else : 
-		isFinished = isFinishedExternal
+	answers = prompt(questions)
+	return (answers['exit'])
 
 def addAnotherColumn() : 
-	addAnotherOne = raw_input("Add another column? [Y/N]")
-	print("user says: " + addAnotherOne)
-	if addAnotherOne is "Y" or addAnotherOne is "y":
-		return True
-	else :
-		return False
+	questions = [
+		{
+			'type': 'confirm',
+			'message': 'Do you want to add another column?',
+			'name': 'addAnotherColumn'
+		}
+	]
+
+	answers = prompt(questions)
+	return (answers['addAnotherColumn'])
 
 def nameOfTable() :
-	return raw_input("Name of table\n")
+	questions = [
+		{
+			'type': 'input',
+			'message': 'Name of the table',
+			'name': 'tableName'
+		}
+	]
+
+	answers = prompt(questions)
+	return (answers['tableName'])
 
 def askForSystemOrEntity() :
-	return raw_input("Is it a system table [0] or basic table [1]? (NOT WORKING YET)\n")
+	questions = [
+		{
+			'type': 'list',
+			'message': 'Is this entity from system or a basic entity?',
+			'name': 'systemOrEntity',
+			'choices': [
+				{'name': 'system'},
+				{'name': 'basic'}
+			],
+			'validate': lambda answer: 'You must choose at least one.' \
+			if len(answer) == 0 else True
+		}
+	]
+
+	answers = prompt(questions)
+	return (answers['systemOrEntity'])
 
 def askForColumnName() :
-	return raw_input("Column name\n")
+	questions = [
+		{
+			'type': 'input',
+			'message': 'Name of the column',
+			'name': 'columnName'
+		}
+	]
+
+	answers = prompt(questions)
+	return (answers['columnName'])
 
 def askForColumnType() :
-	return raw_input("Column type\n")
+	questions = [
+		{
+			'type': 'list',
+			'message': 'Select type',
+			'name': 'type',
+			'choices': [
+				{'name': 'int'},
+				{'name': 'varchar'},
+				{'name': 'datetime2'}
+			],
+			'validate': lambda answer: 'You must choose at least one.' \
+			if len(answer) == 0 else True
+		}
+	]
 
+	answers = prompt(questions)
+	return (answers['type'])
+
+def askForColumnSize() :
+	questions = [
+		{
+			'type': 'input',
+			'message': 'Size of the column',
+			'name': 'columnSize'
+		}
+	]
+
+	answers = prompt(questions)
+	return (answers['columnSize'])
+	
 def isNullable() :
-	isNullable = raw_input("Is nullable? [Y/N]\n")
+	questions = [
+		{
+			'type': 'confirm',
+			'message': 'Is it nullable?',
+			'name': 'isItNullable'
+		}
+	]
 
-	if isNullable is "Y" or isNullable is "y":
-		return True
-	else :
-		return False
+	answers = prompt(questions)
+	return (answers['isItNullable'])
 
 def isUnique() :
-	isUnique = raw_input("Is unique? [Y/N]\n")
+	questions = [
+		{
+			'type': 'confirm',
+			'message': 'Is it unique?',
+			'name': 'isItUnique'
+		}
+	]
 
-	if isUnique is "Y" or isUnique is "y":
-		return True
-	else :
-		return False
+	answers = prompt(questions)
+	return (answers['isItUnique'])
 
 def createNewTable():
 	name = nameOfTable()
@@ -72,14 +150,21 @@ def createNewTable():
 	while keepAddingColumn :
 		columnName = askForColumnName()
 		columnType = askForColumnType()
+		columnSize = ''
+
+		if columnType.encode("utf-8") == "varchar".encode("utf-8") :
+			columnSize = askForColumnSize()
 
 		sqlFile.write(tab)
 		sqlFile.write(columnName + tab + columnType)
 
+		if columnSize is not '':
+			sqlFile.write('(' + columnSize + ')')
+
 		if(isNullable() is True) :
-			sqlFile.write(' NOT NULL')
-		else :
 			sqlFile.write(' NULL')
+		else :
+			sqlFile.write(' NOT NULL')
 
 		if(isUnique() is True) :
 			sqlFile.write(' UNIQUE')
@@ -94,10 +179,23 @@ def createNewTable():
 
 def callMenus() : 
 	global isFinished
-	exitApp(False)
+	
+	isFinished = False
 
 	while isFinished is False :
 		 createNewTable()
-		 exitApp('')
+		 isFinished = exitApp()
+
+def testMenus(): 
+	questions = [
+		{
+			'type': 'input',
+			'message': 'Name of the table',
+			'name': 'tableName'
+		}
+	]
+
+	answers = prompt(questions)
+	return (answers['tableName'])
 
 callMenus()
