@@ -11,3 +11,5 @@ defaultTypeLength = {
 }
 
 srcUrl = 'C:\\Users\\Tesipro\\Desktop\\Software\\UlysesCloud\\Backend\\Core\\src\\main\\resources\\db\\migration'
+
+tab = '  '
