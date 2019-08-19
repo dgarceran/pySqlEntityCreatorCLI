@@ -30,31 +30,6 @@ def codeNameTableOptions() :
 	answers = prompt(questions)
 	return (answers['extrasCodeNameTable'])
 
-def hasColorCode() :
-	questions = [
-		{
-			'type': 'confirm',
-			'message': 'Does it have color code?',
-			'name': 'hasColorCode'
-		}
-	]
-
-	answers = prompt(questions)
-	return (answers['hasColorCode'])
-
-def hasI18n() :
-	questions = [
-		{
-			'type': 'confirm',
-			'message': 'Does it have i18n?',
-			'name': 'hasI18n',
-			'default': True
-		}
-	]
-
-	answers = prompt(questions)
-	return (answers['hasI18n'])
-
 def createCodeNameTable() :
 	name = nameOfTable()
 	tableOptions = codeNameTableOptions()
