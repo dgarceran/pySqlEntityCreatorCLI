@@ -260,3 +260,4 @@ def createNewTable():
 
 	sqlFile = open('files/V1_0__Create_Table_' + name + '.sql', 'w')
 	sqlFile.write(sqlFileToWrite)
+	print("Done! Created " + name)

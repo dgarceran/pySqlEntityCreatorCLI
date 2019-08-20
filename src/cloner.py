@@ -137,3 +137,5 @@ def cloneFile() :
 	# ask to replace element names
 	if replaceTextElements() is True :
 		replaceElements(tableName, cleanChoosenFile(choosenFile))
+
+	print("Done! Cloned " + cleanChoosenFile(choosenFile) + " and created " + tableName)
